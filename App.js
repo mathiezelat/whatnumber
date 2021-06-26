@@ -1,21 +1,40 @@
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Header } from './components/Header';
+import { StartGameScreen } from './screens/StartGameScreen'
+import { GameScreen } from './screens/GameScreen';
+import { useFonts } from 'expo-font';
+import AppLoading from 'expo-app-loading';
 
 export default function App() {
+  const [userNumber, setUserNumber] = useState('')
+  const [loaded, error] = useFonts({
+    'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
+    'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf'),
+  })
+
+  let content = userNumber ? <GameScreen onEndGame={setUserNumber} userOption={userNumber} /> :
+  <StartGameScreen onStartGame={setUserNumber} />
+
+  if (!loaded){
+    return (
+      <AppLoading />
+    )
+  }
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Header title={"WhatNumber"} />
+      {content}
       <StatusBar style="auto" />
-    </View>
+    </View> 
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#eee',
   },
 });
