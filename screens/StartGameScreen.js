@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, Button, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { StyleSheet, Text, Button, View, TouchableWithoutFeedback, Keyboard, Dimensions, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import Colors from '../constants/colors';
@@ -46,7 +46,8 @@ export const StartGameScreen = ({ onStartGame })=>{
 
     return (
         <TouchableWithoutFeedback onPress={()=> Keyboard.dismiss()}>
-            <View style={styles.screen}>
+            <ScrollView style={{flex: 1}}>
+            <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'position' : 'height' } keyboardVerticalOffset={30} style={styles.screen}>
                 <Text style={styles.title}>¡Comenzar el juego!</Text>
                 <Card style={styles.inputContainer}>
                     <Text>Escribe un número</Text>
@@ -68,7 +69,8 @@ export const StartGameScreen = ({ onStartGame })=>{
                     </View>
                 </Card>
                 {confirmedOutput}
-            </View>
+            </KeyboardAvoidingView>
+            </ScrollView>
         </TouchableWithoutFeedback>
     )
 }
@@ -84,19 +86,20 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     inputContainer: {
-        width: 300,
-        maxWidth: '80%',
-        padding: 20,
+        minWidth: '80%',
+        maxWidth: '95%',
+        paddingHorizontal: Dimensions.get("window").height > 600 ? 10 : 5,
+        paddingVertical: Dimensions.get("window").height > 600 ? 20 : 10,
         alignItems: 'center'
     },
     buttonContainer: {
         flexDirection: 'row',
-        width: '100%',
-        justifyContent: 'space-around',
-        paddingHorizontal: 15,
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     button: {
-        width: 100
+        width: Dimensions.get("window").width / 3,
+        marginHorizontal: 5
     },
     summaryContainer: {
         marginVertical: 10,

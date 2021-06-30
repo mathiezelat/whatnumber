@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, Button, Modal } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, Text, Button, Dimensions, Alert, ScrollView } from 'react-native';
 import { NumberContainer } from '../components/NumberContainer';
 import { Card } from '../components/Card';
 import Colors from '../constants/colors';
@@ -17,75 +17,67 @@ const generateRandomBetween = (min, max, exclude) =>{
 
 
 
-export const GameScreen = ({ onEndGame, userOption }) =>{
+export const GameScreen = ({ onEndGame, onGameOver,userOption }) =>{
     const [currentGuess, setCurrentGuess] = useState(generateRandomBetween(1, 99, userOption));
-    const [modalVisible, setModalVisible] = useState(false);
-    const [racha, setRacha] = useState(0)
+    const [rounds, setRounds] = useState(0);
+    const currentLow = useRef(1);
+    const currentHight = useRef(100);
+    useEffect(()=>{
+        if(currentGuess === userOption) onGameOver(rounds);
+    }, [currentGuess, userOption, onGameOver]);
+
+
     const handleEndGame = () => {
         onEndGame(0);
-        setModalVisible(false);
-        setRacha(0);
     }
-    const handleMayor = () =>{
-        setCurrentGuess(generateRandomBetween(1, 99, userOption));
-        if (currentGuess < userOption){
-            setRacha(racha + 1)
-        } else {
-            setModalVisible(true);
+
+    const handleNextGuess = direction => {
+        if(
+            (direction === 'lower' && currentGuess < userOption) ||
+            (direction === 'greater' && currentGuess > userOption)
+        ){
+            Alert.alert('No mientas!', 'Tu sabes que no es verdad...!',[
+                {
+                    text: 'Disculpa!',
+                    style: 'cancel',
+                },
+            ]);
+            return;
         }
-    }
-    const handleMenor = () =>{
-        setCurrentGuess(generateRandomBetween(1, 99, userOption));
-        if (currentGuess > userOption){
-            setRacha(racha + 1)
+
+        if(direction === 'lower'){
+            currentHight.current = currentGuess;
         } else {
-            setModalVisible(true);
+            currentLow.current = currentGuess;
         }
+        const nextNumber = generateRandomBetween(currentLow.current, currentHight.current, currentGuess);
+        setCurrentGuess(nextNumber);
+        setRounds(round => round + 1);
     }
-    let rachaContainer = (racha >= 1) ? 
-        rachaContainer = (
-            <View>
-                <Text>Tu racha: {racha}</Text>
-            </View>
-        ) :  null
     return (
-        <>
-        <Modal
-            animationType="slide"
-            transparent={false}
-            visible={modalVisible}>
-            <View style={styles.modalContainer}>
-                <Card style={styles.modalCardContainer}>
-                    <View style={styles.modalTextContainer}>
-                        <Text style={styles.modalTextLost}>¡Has perdido!</Text>
-                        <Text>El oponente te venció con su número {currentGuess}</Text>
-                        <Text>Número elegido: {userOption}</Text>
-                        <Text>Tuviste una racha de {racha}</Text>
-                    </View>
-                    <View style={styles.modalButtonContainer}>
-                        <Button onPress={handleEndGame} title="Terminar" color={Colors.primary} />
-                    </View>
-                </Card>
-            </View>
-        </Modal>
+        <ScrollView>
         <View style={styles.containerGameScreen}>
             <Text style={styles.oponenteText}>La suposición del oponente</Text>
             <NumberContainer>{currentGuess}</NumberContainer>
             <Card style={styles.buttonContainer}>
                 <View style={styles.button}>
-                <Button title="MENOR" onPress={handleMenor} color={Colors.secundary} />
+                <Button title="MENOR" onPress={handleNextGuess.bind(this, 'lower')} color={Colors.secundary} />
                 </View>
                 <View style={styles.button}>
-                <Button title="MAYOR" onPress={handleMayor} color={Colors.primary} />
+                <Button title="MAYOR" onPress={handleNextGuess.bind(this, 'greater')} color={Colors.primary} />
                 </View>
             </Card>
-            {rachaContainer}
             <View style={styles.buttonEnd}>
                 <Button onPress={handleEndGame} title="Terminar" color={Colors.tertiary} />
             </View>
         </View>
-        </>
+        </ScrollView>
     )
+}
+
+const getPadding = () => {
+    const result = Dimensions.get("window");
+    return result;
 }
 
 const styles = StyleSheet.create({
@@ -104,34 +96,17 @@ const styles = StyleSheet.create({
     },
     buttonContainer:{
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 10,
-        padding:20,
-        width: '70%',
-        marginBottom: 10
+        justifyContent: 'center',
+        padding: Dimensions.get("window").height > 700 ? 20 : 10,
+        minWidth: '60%',
+        maxWidth: '95%',
+        marginVertical: 10,
+        marginHorizontal: 10
     },
     button: {
-        width: 100
-    },
-    modalContainer:{
-        flex:1,
+        width: 100,
+        marginHorizontal: 25,
         justifyContent: 'center',
-        alignItems: 'center'
-    },
-    modalCardContainer: {
-        padding: 30,
-        backgroundColor: '#d54',
-        borderRadius: 23,
-        justifyContent: 'space-around',
-        height: 200
-    },
-    modalTextContainer: {
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    modalTextLost: {
-        fontSize: 24,
-        marginBottom: 5
     }
 });
 
